@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Future of Universities — Past, Present & Possible Futures</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+  :root {
+    --bg-primary: #0a080f; --bg-secondary: #110f18; --bg-card: #161420; --bg-accent: #1c1a28;
+    --text-primary: #e8e8ed; --text-secondary: #9898a8; --text-muted: #5a5a6e;
+    --accent: #8a6abf; --accent-light: #a88ad6; --accent-dim: rgba(138,106,191,0.12);
+    --border: rgba(255,255,255,0.06);
+    --past: #7a8e9e; --present: #bf8a6a; --future: #6a8abf;
+    --transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; scrollbar-width: thin; scrollbar-color: var(--accent-dim) transparent; }
+  body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg-primary); color: var(--text-primary); line-height: 1.7; overflow-x: hidden; }
+
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 0 3rem; height: 64px; display: flex; align-items: center; justify-content: space-between; background: rgba(10,8,15,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); transition: transform 0.3s; }
+  nav.hidden { transform: translateY(-100%); }
+  .nav-brand { font-family: 'Playfair Display', serif; font-size: 0.95rem; letter-spacing: 0.05em; color: var(--accent); }
+  .nav-links { display: flex; gap: 0.25rem; }
+  .nav-links a { color: var(--text-secondary); text-decoration: none; font-size: 0.8rem; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; padding: 0.5rem 1rem; border-radius: 4px; transition: all 0.25s; }
+  .nav-links a:hover { color: var(--text-primary); background: var(--accent-dim); }
+  .nav-links a.active { color: var(--accent); background: var(--accent-dim); }
+  .progress-bar { position: fixed; top: 64px; left: 0; height: 2px; background: var(--accent); z-index: 99; transition: width 0.1s linear; }
+
+  .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 2rem; position: relative; overflow: hidden; }
+  .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 80% 50% at 50% 50%, rgba(138,106,191,0.06) 0%, transparent 70%), radial-gradient(ellipse 60% 40% at 70% 60%, rgba(106,138,191,0.04) 0%, transparent 60%); }
+  .hero-overline { font-size: 0.75rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--accent); margin-bottom: 2rem; opacity: 0; animation: fadeUp 1s 0.3s forwards; }
+  .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2.5rem, 6vw, 5rem); font-weight: 400; line-height: 1.15; max-width: 800px; opacity: 0; animation: fadeUp 1s 0.5s forwards; }
+  .hero h1 em { font-style: italic; color: var(--accent); }
+  .hero-subtitle { font-size: 1.1rem; color: var(--text-secondary); margin-top: 1.5rem; max-width: 550px; font-weight: 300; opacity: 0; animation: fadeUp 1s 0.7s forwards; }
+  .hero-cta { margin-top: 3rem; display: flex; gap: 1rem; opacity: 0; animation: fadeUp 1s 0.9s forwards; }
+  .hero-cta a { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.85rem 2rem; border-radius: 4px; text-decoration: none; font-size: 0.85rem; font-weight: 500; letter-spacing: 0.04em; transition: all 0.3s; }
+  .cta-primary { background: var(--accent); color: #fff; }
+  .cta-primary:hover { background: var(--accent-light); transform: translateY(-2px); }
+  .cta-secondary { border: 1px solid var(--border); color: var(--text-secondary); }
+  .cta-secondary:hover { border-color: var(--accent); color: var(--accent); }
+  .scroll-indicator { position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 0.5rem; opacity: 0; animation: fadeUp 1s 1.2s forwards; }
+  .scroll-indicator span { font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); }
+  .scroll-line { width: 1px; height: 40px; background: linear-gradient(to bottom, var(--accent), transparent); animation: pulse 2s infinite; }
+
+  .timeline-nav { position: fixed; left: 2rem; top: 50%; transform: translateY(-50%); z-index: 90; display: flex; flex-direction: column; gap: 0.15rem; opacity: 0; transition: opacity 0.5s; }
+  .timeline-nav.visible { opacity: 1; }
+  .timeline-dot { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--text-muted); background: transparent; cursor: pointer; transition: all 0.3s; position: relative; }
+  .timeline-dot:hover { border-color: var(--accent); transform: scale(1.3); }
+  .timeline-dot.active { border-color: var(--accent); background: var(--accent); transform: scale(1.3); }
+  .timeline-dot[data-era="past"] { border-color: var(--past); } .timeline-dot[data-era="past"].active { background: var(--past); }
+  .timeline-dot[data-era="present"] { border-color: var(--present); } .timeline-dot[data-era="present"].active { background: var(--present); }
+  .timeline-dot[data-era="future"] { border-color: var(--future); } .timeline-dot[data-era="future"].active { background: var(--future); }
+  .timeline-dot .tooltip { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); white-space: nowrap; font-size: 0.7rem; color: var(--text-secondary); opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+  .timeline-dot:hover .tooltip { opacity: 1; }
+
+  section { padding: 6rem 3rem; position: relative; } .section-inner { max-width: 1200px; margin: 0 auto; }
+  .era-header { min-height: 60vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 4rem 2rem; }
+  .era-label { font-size: 0.7rem; letter-spacing: 0.3em; text-transform: uppercase; margin-bottom: 1.5rem; padding: 0.4rem 1.2rem; border-radius: 2px; display: inline-block; }
+  .era-label.past { color: var(--past); border: 1px solid rgba(122,142,158,0.3); background: rgba(122,142,158,0.08); }
+  .era-label.present { color: var(--present); border: 1px solid rgba(191,138,106,0.3); background: rgba(191,138,106,0.08); }
+  .era-label.future { color: var(--future); border: 1px solid rgba(106,138,191,0.3); background: rgba(106,138,191,0.08); }
+  .era-header h2 { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 4vw, 3.5rem); font-weight: 400; line-height: 1.2; max-width: 700px; }
+  .era-header p { color: var(--text-secondary); font-size: 1.05rem; max-width: 600px; margin-top: 1.5rem; font-weight: 300; }
+
+  .content-block { padding: 5rem 0; border-top: 1px solid var(--border); }
+  .content-block h3 { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 400; margin-bottom: 0.5rem; }
+  .content-block .subtitle { font-size: 1rem; color: var(--accent); font-weight: 300; margin-bottom: 2rem; font-style: italic; }
+  .content-block p { color: var(--text-secondary); font-size: 0.95rem; line-height: 1.8; max-width: 700px; }
+  .content-block p + p { margin-top: 1.2rem; }
+
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
+  .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; transition: all var(--transition); }
+  .card:hover { border-color: rgba(138,106,191,0.2); transform: translateY(-4px); box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+  .card-image { width: 100%; height: 200px; object-fit: cover; display: block; }
+  .card-body { padding: 1.5rem; }
+  .card-body h4 { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 400; margin-bottom: 0.75rem; }
+  .card-body p { color: var(--text-secondary); font-size: 0.85rem; line-height: 1.7; }
+  .card-tag { display: inline-block; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.25rem 0.6rem; border-radius: 2px; margin-bottom: 0.75rem; }
+  .card-tag.past { color: var(--past); background: rgba(122,142,158,0.12); }
+  .card-tag.present { color: var(--present); background: rgba(191,138,106,0.12); }
+  .card-tag.future { color: var(--future); background: rgba(106,138,191,0.12); }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+  .two-col.reverse { direction: rtl; } .two-col.reverse > * { direction: ltr; }
+  .col-image { width: 100%; border-radius: 8px; object-fit: cover; max-height: 450px; }
+
+  .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin: 3rem 0; }
+  .stat { text-align: center; padding: 2rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; transition: all var(--transition); }
+  .stat:hover { border-color: rgba(191,138,106,0.3); transform: translateY(-2px); }
+  .stat-number { font-family: 'Playfair Display', serif; font-size: 3rem; font-weight: 700; color: var(--present); line-height: 1; }
+  .stat-label { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.5rem; line-height: 1.5; }
+
+  .pullquote { position: relative; padding: 3rem 3rem 3rem 4rem; margin: 3rem 0; border-left: 2px solid var(--accent); background: var(--accent-dim); border-radius: 0 8px 8px 0; }
+  .pullquote p { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-style: italic; color: var(--text-primary); line-height: 1.6; }
+
+  .tabs { display: flex; gap: 0.25rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.82rem; font-weight: 500; padding: 0.75rem 1.25rem; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.25s; font-family: inherit; }
+  .tab-btn:hover { color: var(--text-secondary); } .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-panel { display: none; } .tab-panel.active { display: block; }
+
+  .futures-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
+  .future-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 2rem; position: relative; overflow: hidden; transition: all var(--transition); cursor: pointer; }
+  .future-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--future); opacity: 0; transition: opacity 0.3s; }
+  .future-card:hover::before { opacity: 1; }
+  .future-card:hover { border-color: rgba(106,138,191,0.25); transform: translateY(-4px); box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+  .future-card .icon { font-size: 2rem; margin-bottom: 1rem; }
+  .future-card h4 { font-family: 'Playfair Display', serif; font-size: 1.15rem; font-weight: 400; margin-bottom: 0.75rem; }
+  .future-card p { color: var(--text-secondary); font-size: 0.85rem; line-height: 1.7; }
+  .future-card .expand-content { max-height: 0; overflow: hidden; transition: max-height 0.5s ease; }
+  .future-card.expanded .expand-content { max-height: 500px; }
+  .future-card .expand-hint { font-size: 0.72rem; color: var(--text-muted); margin-top: 1rem; letter-spacing: 0.05em; }
+
+  .gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 2rem 0; }
+  .gallery img { width: 100%; height: 220px; object-fit: cover; border-radius: 6px; transition: all var(--transition); cursor: pointer; }
+  .gallery img:hover { transform: scale(1.03); box-shadow: 0 10px 40px rgba(0,0,0,0.4); }
+
+  .lightbox { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.92); display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; cursor: pointer; }
+  .lightbox.open { opacity: 1; pointer-events: all; }
+  .lightbox img { max-width: 85vw; max-height: 85vh; object-fit: contain; border-radius: 4px; }
+
+  .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 0; margin: 2rem 0; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .comparison-side { padding: 2.5rem; }
+  .comparison-side:first-child { border-right: 1px solid var(--border); }
+  .comparison-side h4 { font-family: 'Playfair Display', serif; font-size: 1.1rem; margin-bottom: 1.5rem; }
+  .comparison-side ul { list-style: none; display: flex; flex-direction: column; gap: 0.75rem; }
+  .comparison-side ul li { font-size: 0.85rem; color: var(--text-secondary); padding-left: 1.2rem; position: relative; }
+  .comparison-side ul li::before { content: ''; position: absolute; left: 0; top: 0.55em; width: 6px; height: 6px; border-radius: 50%; }
+  .comparison-side.old ul li::before { background: var(--present); }
+  .comparison-side.new ul li::before { background: var(--future); }
+
+  .era-divider { width: 100%; height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); }
+  footer { padding: 4rem 3rem; border-top: 1px solid var(--border); text-align: center; }
+  footer p { font-size: 0.78rem; color: var(--text-muted); line-height: 1.8; }
+  footer .brand { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--accent); margin-bottom: 0.5rem; }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+  .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 900px) { nav { padding: 0 1.5rem; } section { padding: 4rem 1.5rem; } .two-col, .comparison { grid-template-columns: 1fr; gap: 2rem; } .two-col.reverse { direction: ltr; } .gallery { grid-template-columns: 1fr 1fr; } .timeline-nav { display: none; } .nav-links a { padding: 0.4rem 0.6rem; font-size: 0.7rem; } .cards-grid, .futures-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 600px) { .hero h1 { font-size: 2rem; } .stats-row { grid-template-columns: 1fr; } .gallery { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <div class="nav-brand">The Future of Universities</div>
+  <div class="nav-links"><a href="#past">Past</a><a href="#present">Present</a><a href="#future">Future</a></div>
+</nav>
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="timeline-nav" id="timelineNav">
+  <div class="timeline-dot" data-era="past" data-section="past"><span class="tooltip">History</span></div>
+  <div class="timeline-dot" data-era="past" data-section="ancient"><span class="tooltip">Ancient Origins</span></div>
+  <div class="timeline-dot" data-era="past" data-section="medieval"><span class="tooltip">Medieval University</span></div>
+  <div class="timeline-dot" data-era="past" data-section="research-uni"><span class="tooltip">Research University</span></div>
+  <div class="timeline-dot" data-era="past" data-section="mass-era"><span class="tooltip">Mass Education</span></div>
+  <div class="timeline-dot" data-era="present" data-section="present"><span class="tooltip">Today</span></div>
+  <div class="timeline-dot" data-era="present" data-section="crises"><span class="tooltip">Five Crises</span></div>
+  <div class="timeline-dot" data-era="present" data-section="campus-gap"><span class="tooltip">Campus Gap</span></div>
+  <div class="timeline-dot" data-era="future" data-section="future"><span class="tooltip">Future</span></div>
+  <div class="timeline-dot" data-era="future" data-section="futures-explore"><span class="tooltip">7 Futures</span></div>
+  <div class="timeline-dot" data-era="future" data-section="new-brief"><span class="tooltip">New Brief</span></div>
+</div>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox()"><img id="lightboxImg" src="" alt=""></div>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero" id="hero">
+  <div class="hero-overline">An Interactive Exploration</div>
+  <h1>The <em>Future</em> of Universities</h1>
+  <p class="hero-subtitle">From Plato's Academy to AI-powered learning ecosystems — how the spaces where we think, discover, and grow have evolved, and where they must go next.</p>
+  <div class="hero-cta">
+    <a href="#past" class="cta-primary">Begin the Journey &#8594;</a>
+    <a href="#future" class="cta-secondary">Jump to the Future</a>
+  </div>
+  <div class="scroll-indicator"><span>Scroll to explore</span><div class="scroll-line"></div></div>
+</section>
+
+<!-- ═══ PAST ═══ -->
+<div class="era-divider"></div>
+<section class="era-header" id="past">
+  <div class="reveal">
+    <span class="era-label past">Part I</span>
+    <h2>A History of Learning Spaces</h2>
+    <p>The university is nearly a thousand years old. Its architecture has always embodied our beliefs about knowledge — who creates it, who deserves it, and how it is best transmitted.</p>
+  </div>
+</section>
+
+<section id="ancient">
+  <div class="section-inner">
+    <div class="content-block reveal">
+      <h3>The Ancient Roots of Higher Learning</h3>
+      <div class="subtitle">When knowledge was inseparable from place</div>
+      <p>Before the university, there were schools of thought — literally. Plato's Academy (387 BC) was a grove of olive trees outside Athens where students walked and argued among the gardens. Aristotle's Lyceum had a covered walkway — the <em>peripatos</em> — where he lectured while walking. The Musaeum of Alexandria (3rd century BC) combined a library, lecture halls, botanical gardens, and communal dining. The spatial insight was already present: intellectual life required a designed environment.</p>
+    </div>
+
+    <div class="cards-grid reveal">
+      <div class="card">
+        <img src="images/ancient-1.jpg" alt="Ancient academy" class="card-image" onclick="openLightbox(this.src)">
+        <div class="card-body">
+          <span class="card-tag past">387 BC</span>
+          <h4>Plato's Academy</h4>
+          <p>A sacred grove dedicated to the goddess Athena, where Plato taught for nearly 40 years. There were no classrooms. Knowledge was transmitted through dialogue in gardens, under trees, along pathways. The Academy operated continuously for over 300 years — the longest-running educational institution in antiquity.</p>
+        </div>
+      </div>
+      <div class="card">
+        <img src="images/ancient-2.jpg" alt="Nalanda" class="card-image" onclick="openLightbox(this.src)">
+        <div class="card-body">
+          <span class="card-tag past">5th Century AD</span>
+          <h4>Nalanda University</h4>
+          <p>Founded in Bihar, India around 427 AD, Nalanda was the world's first residential university: 10,000 students and 2,000 teachers from across Asia. Its nine-storey library was said to have burned for three months when destroyed. Students studied astronomy, medicine, logic, and philosophy in a campus of monasteries, temples, and lecture halls.</p>
+        </div>
+      </div>
+      <div class="card">
+        <img src="images/library-1.jpg" alt="Library" class="card-image" onclick="openLightbox(this.src)">
+        <div class="card-body">
+          <span class="card-tag past">859 AD</span>
+          <h4>University of al-Qarawiyyin</h4>
+          <p>Founded in Fez, Morocco by Fatima al-Fihri, al-Qarawiyyin is recognised by UNESCO as the world's oldest existing, continually operating university. It began as a mosque and expanded into a centre of learning in mathematics, grammar, medicine, and astronomy — a model that spread across the Islamic world.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-block reveal" id="medieval">
+      <h3>The Medieval University</h3>
+      <div class="subtitle">The invention of an institution</div>
+    </div>
+
+    <div class="two-col reveal">
+      <div>
+        <p>The university as we know it was invented in medieval Europe. The University of Bologna (1088) was founded by students who hired their own teachers. The University of Paris (c.1150) grew from the cathedral schools of Notre-Dame. Oxford (1096) and Cambridge (1209) adopted the collegiate model: students living, eating, and studying in self-governing communities built around a quadrangle.</p>
+        <p style="margin-top:1.2rem">The medieval campus was a deliberate spatial instrument. The quadrangle enclosed a community. The chapel anchored it spiritually. The library preserved its knowledge. The hall fed it. The architecture embodied a philosophy: that learning was not a transaction but a way of life — a total environment that shaped the character as much as the intellect.</p>
+      </div>
+      <img src="images/oxford.jpg" alt="Oxford" class="col-image" onclick="openLightbox(this.src)">
+    </div>
+
+    <div class="content-block reveal" id="research-uni">
+      <h3>The Research University</h3>
+      <div class="subtitle">When the university became a knowledge factory</div>
+    </div>
+
+    <div class="two-col reverse reveal">
+      <div>
+        <p>Wilhelm von Humboldt's founding of the University of Berlin in 1810 introduced the principle that teaching and research were inseparable — that professors should be active researchers and students should learn by participating in discovery. The Humboldtian model transformed the university from a place of transmission into a place of creation.</p>
+        <p style="margin-top:1.2rem">American universities adopted and amplified this model. Johns Hopkins (1876) was founded explicitly as a research university. The Morrill Land-Grant Acts (1862, 1890) created public universities across every US state, democratising access. MIT (1861) and Stanford (1891) fused research with applied science and engineering. By 1945, Vannevar Bush's report to President Roosevelt — "Science: The Endless Frontier" — cemented the university as the engine of national innovation.</p>
+      </div>
+      <img src="images/lab-1.jpg" alt="Research lab" class="col-image" onclick="openLightbox(this.src)">
+    </div>
+
+    <div class="content-block reveal" id="mass-era">
+      <h3>The Age of Mass Higher Education</h3>
+      <div class="subtitle">From elite privilege to universal expectation</div>
+      <p>The post-war period transformed the university from an elite institution into a mass one. The GI Bill (1944) sent 8 million American veterans to college. The Robbins Report (1963) expanded British universities dramatically. Global enrolment in higher education grew from 13 million in 1960 to over 235 million by 2023.</p>
+      <p>This expansion brought extraordinary democratisation — and new problems. The campus infrastructure built for thousands now served tens of thousands. Lecture halls grew to accommodate 500 students. Brutalist megastructures replaced quadrangles. The intimate, residential model of Oxford was replaced by the commuter campus, the satellite campus, and eventually the online platform. Scale was achieved. Intimacy was lost.</p>
+    </div>
+
+    <div class="pullquote reveal">
+      <p>The university has survived for nearly a thousand years by reinventing itself in every era. The question is not whether it will survive the 21st century — but what it will need to become.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PRESENT ═══ -->
+<div class="era-divider"></div>
+<section class="era-header" id="present">
+  <div class="reveal">
+    <span class="era-label present">Part II</span>
+    <h2>The State of Universities Today</h2>
+    <p>A trillion-dollar global sector facing existential questions about cost, relevance, access, and purpose — while sitting on campuses designed for a different century.</p>
+  </div>
+</section>
+
+<section id="present-content">
+  <div class="section-inner">
+    <div class="content-block reveal">
+      <h3>The Sector at a Glance</h3>
+      <div class="subtitle">Scale, cost, and contradiction</div>
+    </div>
+
+    <div class="stats-row reveal">
+      <div class="stat"><div class="stat-number" data-target="235" data-suffix="M">0</div><div class="stat-label">students enrolled in<br>higher education globally</div></div>
+      <div class="stat"><div class="stat-number" data-target="1.8" data-suffix="T" data-prefix="$">0</div><div class="stat-label">annual spending on<br>higher education worldwide</div></div>
+      <div class="stat"><div class="stat-number" data-target="44" data-suffix="%">0</div><div class="stat-label">of graduates work jobs<br>not requiring a degree</div></div>
+      <div class="stat"><div class="stat-number" data-target="1.77" data-suffix="T" data-prefix="$">0</div><div class="stat-label">US student loan<br>debt outstanding</div></div>
+    </div>
+
+    <div class="content-block reveal" id="crises">
+      <h3>Five Crises Facing Universities Today</h3>
+    </div>
+
+    <div class="tabs reveal">
+      <button class="tab-btn active" onclick="switchTab(event,'tab-cost')">Cost</button>
+      <button class="tab-btn" onclick="switchTab(event,'tab-relevance')">Relevance</button>
+      <button class="tab-btn" onclick="switchTab(event,'tab-mental')">Mental Health</button>
+      <button class="tab-btn" onclick="switchTab(event,'tab-digital')">Digital Disruption</button>
+      <button class="tab-btn" onclick="switchTab(event,'tab-equity')">Equity</button>
+    </div>
+
+    <div id="tab-cost" class="tab-panel active reveal">
+      <div class="two-col"><div>
+        <h4 style="font-family:'Playfair Display',serif;font-size:1.2rem;margin-bottom:1rem;color:var(--accent)">The Cost Crisis</h4>
+        <p>US tuition has risen 1,200% since 1980 — four times faster than inflation. The average US graduate carries $37,000 in student debt. Total US student loan debt exceeds $1.77 trillion. In England, annual tuition is &pound;9,250. The model is unsustainable: families are paying more for an asset whose economic return is increasingly uncertain.</p>
+        <p style="margin-top:1rem">The fundamental question: if a four-year degree costs $100,000-$300,000, what exactly is the student buying — and is there a better way to deliver it?</p>
+      </div><img src="images/campus-1.jpg" alt="Campus" class="col-image" onclick="openLightbox(this.src)"></div>
+    </div>
+    <div id="tab-relevance" class="tab-panel reveal">
+      <div class="two-col"><div>
+        <h4 style="font-family:'Playfair Display',serif;font-size:1.2rem;margin-bottom:1rem;color:var(--accent)">The Relevance Question</h4>
+        <p>44% of recent graduates work in jobs that don't require a degree. Google, Apple, and IBM have dropped degree requirements for many roles. The half-life of technical skills is now estimated at 2-5 years. Employers increasingly value demonstrated capability over credentials.</p>
+        <p style="margin-top:1rem">The university's monopoly on credentialling is eroding. Micro-credentials, bootcamps, apprenticeships, and portfolio-based hiring are growing alternatives. The degree is no longer the only pathway — and in some fields, it is no longer the best one.</p>
+      </div><img src="images/students-1.jpg" alt="Students" class="col-image" onclick="openLightbox(this.src)"></div>
+    </div>
+    <div id="tab-mental" class="tab-panel reveal">
+      <div class="two-col"><div>
+        <h4 style="font-family:'Playfair Display',serif;font-size:1.2rem;margin-bottom:1rem;color:var(--accent)">The Mental Health Crisis</h4>
+        <p>44% of US college students report symptoms of depression. Anxiety, loneliness, and suicidal ideation have reached historic levels. Demand for campus counselling services has doubled in a decade, while funding has not kept pace. The pandemic accelerated a crisis that was already building.</p>
+        <p style="margin-top:1rem">The built environment contributes: isolated dormitory rooms, competitive pressure without community support structures, campuses designed for efficiency rather than belonging. The architecture of the modern university was not designed with student wellbeing as a primary brief requirement.</p>
+      </div><img src="images/wellbeing.jpg" alt="Wellbeing" class="col-image" onclick="openLightbox(this.src)"></div>
+    </div>
+    <div id="tab-digital" class="tab-panel reveal">
+      <div class="two-col"><div>
+        <h4 style="font-family:'Playfair Display',serif;font-size:1.2rem;margin-bottom:1rem;color:var(--accent)">Digital Disruption</h4>
+        <p>MOOCs promised to democratise education: Coursera, edX, and Khan Academy offer courses from top universities to anyone with an internet connection. The pandemic forced every university online overnight — and demonstrated both the potential and the limitations. Completion rates for MOOCs remain below 10%. Students overwhelmingly prefer in-person learning for the social experience.</p>
+        <p style="margin-top:1rem">AI is the next wave. ChatGPT has fundamentally disrupted assessment. AI tutors can provide personalised instruction at scale. The question is no longer whether technology will change the university — but what role the physical campus plays when knowledge is universally accessible.</p>
+      </div><img src="images/digital-1.jpg" alt="Digital learning" class="col-image" onclick="openLightbox(this.src)"></div>
+    </div>
+    <div id="tab-equity" class="tab-panel reveal">
+      <div class="two-col"><div>
+        <h4 style="font-family:'Playfair Display',serif;font-size:1.2rem;margin-bottom:1rem;color:var(--accent)">The Equity Gap</h4>
+        <p>Students from the wealthiest 25% of families are 8x more likely to earn a degree than those from the poorest 25%. First-generation students, Indigenous students, and students with disabilities face systemic barriers in access, retention, and outcomes. Legacy admissions, geographic concentration of elite institutions, and unequal school preparation create a system that often reinforces advantage rather than enabling mobility.</p>
+        <p style="margin-top:1rem">The university was supposed to be the great equaliser. For many, it has become another mechanism of stratification.</p>
+      </div><img src="images/community-1.jpg" alt="Community" class="col-image" onclick="openLightbox(this.src)"></div>
+    </div>
+
+    <div class="content-block reveal" id="campus-gap">
+      <h3>The Campus Design Gap</h3>
+      <div class="subtitle">Buildings designed for lectures in a world that needs collaboration</div>
+    </div>
+
+    <div class="comparison reveal">
+      <div class="comparison-side old">
+        <h4 style="color:var(--present)">Designed For</h4>
+        <ul>
+          <li>One-to-many lectures (300-seat halls)</li>
+          <li>Departmental silos and disciplinary boundaries</li>
+          <li>Individual study in the library</li>
+          <li>9am-5pm weekday usage</li>
+          <li>A fixed 3-4 year residential experience</li>
+        </ul>
+      </div>
+      <div class="comparison-side new">
+        <h4 style="color:var(--future)">Not Designed For</h4>
+        <ul>
+          <li>Interdisciplinary collaboration</li>
+          <li>Active and project-based learning</li>
+          <li>24/7 flexible use by diverse learners</li>
+          <li>Student wellbeing and belonging</li>
+          <li>Lifelong learning and community access</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="pullquote reveal">
+      <p>The 300-seat lecture hall is the most expensive way to deliver the least effective form of teaching. We have known this for decades. We have built them anyway.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FUTURE ═══ -->
+<div class="era-divider"></div>
+<section class="era-header" id="future">
+  <div class="reveal">
+    <span class="era-label future">Part III</span>
+    <h2>Possible Futures</h2>
+    <p>Seven trajectories that could reshape the university over the next decade — from AI tutors to campuses without walls.</p>
+  </div>
+</section>
+
+<section id="future-content">
+  <div class="section-inner">
+    <div class="content-block reveal" id="futures-explore">
+      <h3>Seven Possible Futures</h3>
+      <div class="subtitle">Click each to explore</div>
+    </div>
+
+    <div class="futures-grid reveal">
+      <div class="future-card" onclick="toggleFutureCard(this)">
+        <div class="icon">&#9670;</div>
+        <h4>01 — The AI-Native University</h4>
+        <p>Personalised learning at scale — every student with an expert tutor, every assessment adaptive, every pathway unique.</p>
+        <div class="expand-content">
+          <p style="margin-top:1rem">AI tutoring systems can already match the effectiveness of one-on-one human tutoring for knowledge transfer (Benjamin Bloom's "2 sigma problem" — solved). The AI-native university uses this to flip the model entirely: knowledge acquisition happens through personalised AI interaction; campus time is reserved for what AI cannot do — debate, mentorship, collaborative projects, hands-on research, and the formation of professional identity through human relationships.</p>
+          <p style="margin-top:0.75rem;font-size:0.78rem;color:var(--accent)"><strong>Already happening:</strong> Georgia Tech's AI teaching assistant "Jill Watson" handled 10,000 student queries without students realising it was AI. Khan Academy's Khanmigo provides personalised tutoring. Arizona State University's adaptive learning platform personalises coursework for 100,000+ students.</p>
+        </div>
+        <div class="expand-hint">Click to explore</div>
+      </div>
+
+      <div class="future-card" onclick="toggleFutureCard(this)">
+        <div class="icon">&#9733;</div>
+        <h4>02 — The Lifelong University</h4>
+        <p>From a 3-4 year event to a 50-year relationship — the university as a lifelong learning partner, not a one-time credential factory.</p>
+        <div class="expand-content">
+          <p style="margin-top:1rem">If the half-life of skills is 2-5 years, a degree at 22 cannot serve a career that lasts until 70. The lifelong university offers modular, stackable credentials that professionals return to throughout their careers. Short residencies, online modules, mentorship networks, and alumni learning communities replace the binary "enrolled/graduated" model. The campus becomes a place people return to — not a place they leave.</p>
+          <p style="margin-top:0.75rem;font-size:0.78rem;color:var(--accent)"><strong>Pioneers:</strong> Stanford's "Open Loop University" concept proposes 6 years of learning spread across a lifetime. Singapore's SkillsFuture gives every citizen credits for lifelong education. Google Career Certificates offer industry-recognised credentials in months, not years.</p>
+        </div>
+        <div class="expand-hint">Click to explore</div>
+      </div>
+
+      <div class="future-card" onclick="toggleFutureCard(this)">
+        <div class="icon">&#9635;</div>
+        <h4>03 — The Campus Without Walls</h4>
+        <p>The city as classroom — universities that embed in communities, use the urban fabric as learning infrastructure, and dissolve the boundary between town and gown.</p>
+        <div class="expand-content">
+          <p style="margin-top:1rem">The walled campus was designed for an era when knowledge was scarce and needed to be guarded. In an era of universal information access, the value of the university lies in its connections — to industries, communities, cultures, and problems. The campus without walls uses co-working spaces, maker labs, hospital wards, startup incubators, and community organisations as its learning environments. The campus is a hub, not a boundary.</p>
+          <p style="margin-top:0.75rem;font-size:0.78rem;color:var(--accent)"><strong>Examples:</strong> Northeastern University's co-op model integrates work experience. Minerva University has no campus — students live in 7 cities across 4 years. The University of Chicago's Polsky Center embeds entrepreneurship in the community.</p>
+        </div>
+        <div class="expand-hint">Click to explore</div>
+      </div>
+
+      <div class="future-card" onclick="toggleFutureCard(this)">
+        <div class="icon">&#9752;</div>
+        <h4>04 — The Wellbeing University</h4>
+        <p>Campus design that treats student mental health as a primary brief requirement — not an afterthought addressed by a counselling office.</p>
+        <div class="expand-content">
+          <p style="margin-top:1rem">The mental health crisis on campuses is partly an environment crisis. Isolation in anonymous dormitories. Competitive pressure without community support. Campuses that shut down at 5pm. The wellbeing university designs belonging into the architecture: small residential communities with shared kitchens and common rooms; nature and daylight as non-negotiable requirements; acoustic design for quiet study and restorative rest; sports, creative, and social spaces distributed across campus rather than concentrated in one facility.</p>
+          <p style="margin-top:0.75rem;font-size:0.78rem;color:var(--accent)"><strong>Leaders:</strong> University of British Columbia's student housing designed around community. Aalto University's campus integrating wellbeing research. The Jed Foundation's campus design guidelines for suicide prevention.</p>
+        </div>
+        <div class="expand-hint">Click to explore</div>
+      </div>
+
+      <div class="future-card" onclick="toggleFutureCard(this)">
+        <div class="icon">&#8635;</div>
+        <h4>05 — The Adaptive Campus</h4>
+        <p>Buildings that reconfigure for different pedagogies — from seminar to maker space to performance venue — informed by real-time usage data.</p>
+        <div class="expand-content">
+          <p style="margin-top:1rem">Most university buildings are used at 30-40% of capacity. Lecture halls sit empty 60% of the week. Seminar rooms are double-booked while common rooms are deserted. The adaptive campus uses sensor networks and digital twins to understand how space is actually used, then reconfigures: movable walls, modular furniture, bookable maker equipment, and rooms that transform from lecture to workshop to exhibition. The building learns from its occupants and optimises itself.</p>
+          <p style="margin-top:0.75rem;font-size:0.78rem;color:var(--accent)"><strong>Examples:</strong> MIT Media Lab's reconfigurable project spaces. University of Melbourne's Arts West building with flexible teaching labs. Singapore University of Technology and Design's "mega-studios" for interdisciplinary work.</p>
+        </div>
+        <div class="expand-hint">Click to explore</div>
+      </div>
+
+      <div class="future-card" onclick="toggleFutureCard(this)">
+        <div class="icon">&#9673;</div>
+        <h4>06 — The Net-Zero Campus</h4>
+        <p>Universities as living laboratories for sustainability — decarbonising their own operations while training the generation that must decarbonise everything else.</p>
+        <div class="expand-content">
+          <p style="margin-top:1rem">Universities own billions of square feet of buildings, many dating from the mid-20th century and designed without energy efficiency in mind. The net-zero campus retrofits existing stock while building new to Passive House or net-zero standards. But the real opportunity is pedagogical: the campus itself becomes a teaching tool. Students study energy systems on their own buildings. Research centres test materials on their own facades. The university practices what it teaches.</p>
+          <p style="margin-top:0.75rem;font-size:0.78rem;color:var(--accent)"><strong>Leaders:</strong> University of British Columbia's CIRS building (net-positive energy). Cornell's Earth Source Heat project (geothermal campus heating). NUS Singapore's School of Design & Environment (net-zero tropical building).</p>
+        </div>
+        <div class="expand-hint">Click to explore</div>
+      </div>
+
+      <div class="future-card" onclick="toggleFutureCard(this)">
+        <div class="icon">&#10029;</div>
+        <h4>07 — The Civic University</h4>
+        <p>The university as anchor institution — deeply embedded in its city, accountable to its community, and measured by its local impact as much as its global ranking.</p>
+        <div class="expand-content">
+          <p style="margin-top:1rem">Many universities sit in communities that derive little benefit from their presence. The civic university inverts this: its research addresses local problems, its students contribute to community projects, its facilities are open to the public, and its procurement and employment practices strengthen the local economy. The campus becomes a shared civic asset — a library, a park, a health clinic, a cultural venue, and an economic engine, not just an educational enclave.</p>
+          <p style="margin-top:0.75rem;font-size:0.78rem;color:var(--accent)"><strong>Examples:</strong> University of Sheffield's civic university agreement. Drexel University's partnership with West Philadelphia. The University of Manchester's engagement with Moss Side. Anchor institution strategies across the UK's Civic University Network.</p>
+        </div>
+        <div class="expand-hint">Click to explore</div>
+      </div>
+    </div>
+
+    <div class="content-block reveal">
+      <h3>Visions of Tomorrow</h3>
+      <div class="subtitle">Architecture that reimagines learning</div>
+    </div>
+
+    <div class="gallery reveal">
+      <img src="images/futuristic-1.jpg" alt="Future architecture" onclick="openLightbox(this.src)">
+      <img src="images/green-1.jpg" alt="Green campus" onclick="openLightbox(this.src)">
+      <img src="images/modern-2.jpg" alt="Modern building" onclick="openLightbox(this.src)">
+      <img src="images/green-2.jpg" alt="Nature campus" onclick="openLightbox(this.src)">
+      <img src="images/community-2.jpg" alt="Collaboration" onclick="openLightbox(this.src)">
+      <img src="images/futuristic-2.jpg" alt="Future design" onclick="openLightbox(this.src)">
+    </div>
+
+    <div class="content-block reveal" id="new-brief">
+      <h3>A New Brief for the University</h3>
+      <div class="subtitle">What the campus of 2035 must deliver</div>
+    </div>
+
+    <div class="cards-grid reveal">
+      <div class="card" style="border-top:2px solid var(--future)"><div class="card-body">
+        <h4>Collision over isolation</h4>
+        <p>The most valuable learning happens in unplanned encounters between disciplines. Campus design must make interdisciplinary collision structurally inevitable — not optional.</p>
+      </div></div>
+      <div class="card" style="border-top:2px solid var(--future)"><div class="card-body">
+        <h4>Belonging by design</h4>
+        <p>Student wellbeing is an architectural problem as much as a pastoral one. Small communities, shared kitchens, visible nature, and acoustic comfort are not amenities — they are retention infrastructure.</p>
+      </div></div>
+      <div class="card" style="border-top:2px solid var(--future)"><div class="card-body">
+        <h4>Flexible, not fixed</h4>
+        <p>Pedagogy is changing faster than buildings can be built. Every new space must be designed for adaptation: movable walls, reconfigurable furniture, infrastructure that supports uses not yet imagined.</p>
+      </div></div>
+      <div class="card" style="border-top:2px solid var(--future)"><div class="card-body">
+        <h4>Open to the community</h4>
+        <p>The walled campus is an anachronism. The university's facilities — libraries, labs, maker spaces, performance venues — should serve the community as much as the enrolled student.</p>
+      </div></div>
+      <div class="card" style="border-top:2px solid var(--future)"><div class="card-body">
+        <h4>Net-zero and pedagogical</h4>
+        <p>Every building should be a teaching tool. Energy systems, water management, and material choices should be visible, legible, and integrated into the curriculum.</p>
+      </div></div>
+      <div class="card" style="border-top:2px solid var(--future)"><div class="card-body">
+        <h4>Worth the journey</h4>
+        <p>When knowledge is free online, the campus must offer something that cannot be digitised: mentorship, hands-on research, community, serendipity, and the irreplaceable experience of being challenged in person.</p>
+      </div></div>
+    </div>
+
+    <div class="pullquote reveal" style="margin-top:3rem">
+      <p>The universities that will thrive are not those with the grandest buildings or the highest rankings. They are those that understood what a campus is actually for: creating the conditions under which people become more than they were when they arrived.</p>
+    </div>
+
+    <div class="content-block reveal">
+      <h3>The Self-Learning Campus</h3>
+      <div class="subtitle">Sense, learn, adapt — the campus as living system</div>
+    </div>
+
+    <div class="cards-grid reveal" style="grid-template-columns: repeat(3, 1fr);">
+      <div class="card" style="border-left:3px solid var(--future)"><div class="card-body">
+        <h4>Sense</h4>
+        <p>Occupancy sensors, environmental monitors, and usage analytics track how every room, corridor, and outdoor space is actually used — revealing the gap between designed intent and lived reality.</p>
+      </div></div>
+      <div class="card" style="border-left:3px solid var(--accent)"><div class="card-body">
+        <h4>Learn</h4>
+        <p>A digital twin aggregates this data to identify patterns: which spaces foster collaboration, which are avoided, when energy is wasted, and how student movement correlates with engagement and retention.</p>
+      </div></div>
+      <div class="card" style="border-left:3px solid var(--past)"><div class="card-body">
+        <h4>Adapt</h4>
+        <p>The campus responds: reallocating underused spaces, adjusting lighting and climate for circadian health, informing timetabling with real occupancy data, and evolving its physical form based on evidence rather than assumption.</p>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="brand">The Future of Universities</div>
+  <p>An interactive exploration of learning environments — past, present, and possible futures<br>
+  Images courtesy of <a href="https://unsplash.com" style="color:var(--accent);text-decoration:none">Unsplash</a> contributors under the Unsplash License</p>
+</footer>
+
+<script>
+const revealEls=document.querySelectorAll('.reveal');const revealObserver=new IntersectionObserver(e=>{e.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')})},{threshold:0.1,rootMargin:'0px 0px -50px 0px'});revealEls.forEach(el=>revealObserver.observe(el));
+window.addEventListener('scroll',()=>{const h=document.documentElement.scrollHeight-window.innerHeight;document.getElementById('progressBar').style.width=(window.scrollY/h*100)+'%'});
+let lastScrollY=0;window.addEventListener('scroll',()=>{document.getElementById('nav').classList.toggle('hidden',window.scrollY>lastScrollY&&window.scrollY>200);lastScrollY=window.scrollY});
+const timelineNav=document.getElementById('timelineNav');window.addEventListener('scroll',()=>{timelineNav.classList.toggle('visible',window.scrollY>window.innerHeight*0.5)});
+document.querySelectorAll('.timeline-dot').forEach(d=>{d.addEventListener('click',()=>{const s=document.getElementById(d.dataset.section);if(s)s.scrollIntoView({behavior:'smooth',block:'start'})})});
+const sectionIds=[...document.querySelectorAll('.timeline-dot')].map(d=>d.dataset.section);const sectionObserver=new IntersectionObserver(e=>{e.forEach(e=>{if(e.isIntersecting){document.querySelectorAll('.timeline-dot').forEach(d=>d.classList.remove('active'));const dot=document.querySelector(`.timeline-dot[data-section="${e.target.id}"]`);if(dot)dot.classList.add('active')}})},{threshold:0.3});sectionIds.forEach(id=>{const el=document.getElementById(id);if(el)sectionObserver.observe(el)});
+const navObserver=new IntersectionObserver(e=>{e.forEach(e=>{if(e.isIntersecting){document.querySelectorAll('.nav-links a').forEach(a=>a.classList.remove('active'));const l=document.querySelector(`.nav-links a[href="#${e.target.id}"]`);if(l)l.classList.add('active')}})},{threshold:0.2});['past','present','future'].forEach(id=>{const el=document.getElementById(id);if(el)navObserver.observe(el)});
+const statObserver=new IntersectionObserver(e=>{e.forEach(e=>{if(e.isIntersecting){const el=e.target;const target=parseFloat(el.dataset.target);const prefix=el.dataset.prefix||'';const suffix=el.dataset.suffix||'%';const isFloat=target%1!==0;let current=0;const step=isFloat?target/40:Math.max(1,Math.ceil(target/40));const interval=setInterval(()=>{current+=step;if(current>=target){current=target;clearInterval(interval)}el.textContent=prefix+(isFloat?current.toFixed(1):Math.round(current))+suffix},30);statObserver.unobserve(el)}})},{threshold:0.5});document.querySelectorAll('.stat-number').forEach(el=>statObserver.observe(el));
+function switchTab(e,t){document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));e.target.classList.add('active');document.getElementById(t).classList.add('active')}
+function toggleFutureCard(c){c.classList.toggle('expanded');c.querySelector('.expand-hint').textContent=c.classList.contains('expanded')?'Click to collapse':'Click to explore'}
+function openLightbox(s){document.getElementById('lightboxImg').src=s;document.getElementById('lightbox').classList.add('open')}
+function closeLightbox(){document.getElementById('lightbox').classList.remove('open')}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLightbox()});
+document.querySelectorAll('a[href^="#"]').forEach(a=>{a.addEventListener('click',e=>{e.preventDefault();const t=document.querySelector(a.getAttribute('href'));if(t)t.scrollIntoView({behavior:'smooth',block:'start'})})});
+</script>
+</body>
+</html>
